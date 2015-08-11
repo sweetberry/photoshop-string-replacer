@@ -1,6 +1,3 @@
-// thanks to mike hale and paul mr;
-// 2013, use it at your own risk;
-////////////////////////////////////
 function getSelectedLayers () {
   var theLayers = getSelectedLayersIdx();
   //alert( "selectIs:" + theLayers.length )
@@ -14,12 +11,13 @@ function getSelectedLayers () {
   }
   return res;
 }
-// by mike hale, via paul riggott;
-// http://forums.adobe.com/message/1944754#1944754
+
 function selectLayerByIndex ( index, add ) {
   add = undefined ? add = false : add;
+  //noinspection JSClosureCompilerSyntax
   var ref = new ActionReference();
   ref.putIndex( charIDToTypeID( "Lyr " ), index );
+  //noinspection JSClosureCompilerSyntax
   var desc = new ActionDescriptor();
   desc.putReference( charIDToTypeID( "null" ), ref );
   if (add) {
@@ -32,56 +30,53 @@ function selectLayerByIndex ( index, add ) {
     alert( e.message );
   }
 }
+
 function getSelectedLayersIdx () {
-  var selectedLayers = [];
-  var ref = new ActionReference();
-  ref.putEnumerated( charIDToTypeID( "Dcmn" ), charIDToTypeID( "Ordn" ), charIDToTypeID( "Trgt" ) );
-  var desc = executeActionGet( ref );
+  var selectedLayerIndexArray = [];
+  var desc = executeActionGet( _getActiveDocumentActionReference() );
   if (desc.hasKey( stringIDToTypeID( 'targetLayers' ) )) {
     desc = desc.getList( stringIDToTypeID( 'targetLayers' ) );
-    var c = desc.count;
-    selectedLayers = [];
-    for (var i = 0; i < c; i++) {
-      try {
-        app.activeDocument.backgroundLayer;
-        selectedLayers.push( desc.getReference( i ).getIndex() );
-      } catch (e) {
-        selectedLayers.push( desc.getReference( i ).getIndex() + 1 );
+    var count = desc.count;
+    selectedLayerIndexArray = [];
+    for (var i = 0; i < count; i++) {
+      if (hasBackgroundLayer()) {
+        selectedLayerIndexArray.push( desc.getReference( i ).getIndex() );
+      } else {
+        selectedLayerIndexArray.push( desc.getReference( i ).getIndex() + 1 );
       }
     }
   } else {
-    ref = new ActionReference();
+    //noinspection JSClosureCompilerSyntax
+    var ref = new ActionReference();
     ref.putProperty( charIDToTypeID( "Prpr" ), charIDToTypeID( "ItmI" ) );
     ref.putEnumerated( charIDToTypeID( "Lyr " ), charIDToTypeID( "Ordn" ), charIDToTypeID( "Trgt" ) );
-    try {
-      app.activeDocument.backgroundLayer;
-      selectedLayers.push( executeActionGet( ref ).getInteger( charIDToTypeID( "ItmI" ) ) - 1 );
-    } catch (e) {
-      selectedLayers.push( executeActionGet( ref ).getInteger( charIDToTypeID( "ItmI" ) ) );
+    if (hasBackgroundLayer()) {
+      selectedLayerIndexArray.push( executeActionGet( ref ).getInteger( charIDToTypeID( "ItmI" ) ) - 1 );
+    } else {
+      selectedLayerIndexArray.push( executeActionGet( ref ).getInteger( charIDToTypeID( "ItmI" ) ) );
     }
     var vis = app.activeDocument.activeLayer.visible;
     if (vis == true) {
       app.activeDocument.activeLayer.visible = false;
     }
-    var desc9 = new ActionDescriptor();
-    var list9 = new ActionList();
-    var ref9 = new ActionReference();
-    ref9.putEnumerated( charIDToTypeID( 'Lyr ' ), charIDToTypeID( 'Ordn' ), charIDToTypeID( 'Trgt' ) );
-    list9.putReference( ref9 );
-    desc9.putList( charIDToTypeID( 'null' ), list9 );
-    executeAction( charIDToTypeID( 'Shw ' ), desc9, DialogModes.NO );
+    //noinspection JSClosureCompilerSyntax
+    var desc2 = new ActionDescriptor();
+    //noinspection JSClosureCompilerSyntax
+    var list = new ActionList();
+    list.putReference( _getAllLayersActionReference() );
+    desc2.putList( charIDToTypeID( 'null' ), list );
+    executeAction( charIDToTypeID( 'Shw ' ), desc2, DialogModes.NO );
     if (app.activeDocument.activeLayer.visible == false) {
-      selectedLayers.shift();
+      selectedLayerIndexArray.shift();
     }
     app.activeDocument.activeLayer.visible = vis;
   }
-  return selectedLayers;
+  return selectedLayerIndexArray;
 }
 
 function getAllLayers () {
   var res = [];
   pushLayersRecurred( app.activeDocument, res );
-  //alert( "allIs:" + res.length )
   return res;
 }
 
@@ -96,6 +91,32 @@ function pushLayersRecurred ( laySet, array ) {
   }
 }
 
-function isMacOS () {
-  return $.os.indexOf( "Mac" ) !== -1;
+/**
+ * check for background layer
+ * returns {boolean}
+ */
+function hasBackgroundLayer () {
+  var docDesc = executeActionGet( _getActiveDocumentActionReference() );
+  return docDesc.getBoolean( stringIDToTypeID( "hasBackgroundLayer" ) );
+}
+
+function deselectAllLayers () {
+  //noinspection JSClosureCompilerSyntax
+  var desc = new ActionDescriptor();
+  desc.putReference( stringIDToTypeID( 'target' ), _getAllLayersActionReference() );
+  executeAction( stringIDToTypeID( 'selectNoLayers' ), desc, DialogModes.NO );
+}
+
+function _getActiveDocumentActionReference () {
+  //noinspection JSClosureCompilerSyntax
+  var ref = new ActionReference();
+  ref.putEnumerated( charIDToTypeID( "Dcmn" ), charIDToTypeID( "Ordn" ), charIDToTypeID( "Trgt" ) );
+  return ref;
+}
+
+function _getAllLayersActionReference () {
+  //noinspection JSClosureCompilerSyntax
+  var ref = new ActionReference();
+  ref.putEnumerated( stringIDToTypeID( 'layer' ), stringIDToTypeID( 'ordinal' ), stringIDToTypeID( 'targetEnum' ) );
+  return ref;
 }
