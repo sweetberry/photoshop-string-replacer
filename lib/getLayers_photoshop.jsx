@@ -96,8 +96,13 @@ function pushLayersRecurred ( laySet, array ) {
  * returns {boolean}
  */
 function hasBackgroundLayer () {
-  var docDesc = executeActionGet( _getActiveDocumentActionReference() );
-  return docDesc.getBoolean( stringIDToTypeID( "hasBackgroundLayer" ) );
+  try {
+    //noinspection BadExpressionStatementJS
+    app.activeDocument.backgroundLayer;
+    return true;
+  } catch (e) {
+    return false;
+  }
 }
 
 function deselectAllLayers () {
