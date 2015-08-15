@@ -1,6 +1,5 @@
 function getSelectedLayers () {
   var theLayers = getSelectedLayersIdx();
-  //alert( "selectIs:" + theLayers.length )
   var res = [];
   for (var p = 0; p < theLayers.length; p++) {
     selectLayerByIndex( theLayers[p], false );
@@ -14,10 +13,8 @@ function getSelectedLayers () {
 
 function selectLayerByIndex ( index, add ) {
   add = undefined ? add = false : add;
-  //noinspection JSClosureCompilerSyntax
   var ref = new ActionReference();
   ref.putIndex( charIDToTypeID( "Lyr " ), index );
-  //noinspection JSClosureCompilerSyntax
   var desc = new ActionDescriptor();
   desc.putReference( charIDToTypeID( "null" ), ref );
   if (add) {
@@ -46,7 +43,6 @@ function getSelectedLayersIdx () {
       }
     }
   } else {
-    //noinspection JSClosureCompilerSyntax
     var ref = new ActionReference();
     ref.putProperty( charIDToTypeID( "Prpr" ), charIDToTypeID( "ItmI" ) );
     ref.putEnumerated( charIDToTypeID( "Lyr " ), charIDToTypeID( "Ordn" ), charIDToTypeID( "Trgt" ) );
@@ -59,9 +55,7 @@ function getSelectedLayersIdx () {
     if (vis == true) {
       app.activeDocument.activeLayer.visible = false;
     }
-    //noinspection JSClosureCompilerSyntax
     var desc2 = new ActionDescriptor();
-    //noinspection JSClosureCompilerSyntax
     var list = new ActionList();
     list.putReference( _getAllLayersActionReference() );
     desc2.putList( charIDToTypeID( 'null' ), list );
@@ -106,21 +100,18 @@ function hasBackgroundLayer () {
 }
 
 function deselectAllLayers () {
-  //noinspection JSClosureCompilerSyntax
   var desc = new ActionDescriptor();
   desc.putReference( stringIDToTypeID( 'target' ), _getAllLayersActionReference() );
   executeAction( stringIDToTypeID( 'selectNoLayers' ), desc, DialogModes.NO );
 }
 
 function _getActiveDocumentActionReference () {
-  //noinspection JSClosureCompilerSyntax
   var ref = new ActionReference();
   ref.putEnumerated( charIDToTypeID( "Dcmn" ), charIDToTypeID( "Ordn" ), charIDToTypeID( "Trgt" ) );
   return ref;
 }
 
 function _getAllLayersActionReference () {
-  //noinspection JSClosureCompilerSyntax
   var ref = new ActionReference();
   ref.putEnumerated( stringIDToTypeID( 'layer' ), stringIDToTypeID( 'ordinal' ), stringIDToTypeID( 'targetEnum' ) );
   return ref;
