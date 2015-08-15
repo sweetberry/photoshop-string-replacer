@@ -74,10 +74,10 @@ function getAllLayers () {
   return res;
 }
 
-function pushLayersRecurred ( laySet, array ) {
-  var layersLength = laySet.layers.length;
+function pushLayersRecurred ( layerSet, array ) {
+  var layersLength = layerSet.layers.length;
   for (var i = 0; i < layersLength; i++) {
-    var targetLayer = laySet.layers[i];
+    var targetLayer = layerSet.layers[i];
     array.push( targetLayer );
     if (targetLayer.typename == 'LayerSet') {
       pushLayersRecurred( targetLayer, array );
