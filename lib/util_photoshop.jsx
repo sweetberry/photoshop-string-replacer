@@ -10,6 +10,35 @@ function getSelectedLayers () {
   return res;
 }
 
+function getAllLayers () {
+  var res = [];
+  pushLayersRecurred( app.activeDocument, res );
+  return res;
+}
+
+function pushLayersRecurred ( layerSet, array ) {
+  _.each( layerSet.layers, function ( targetLayer ) {
+    array.push( targetLayer );
+    if (targetLayer.typename == 'LayerSet') {
+      pushLayersRecurred( targetLayer, array );
+    }
+  } );
+}
+
+/**
+ * check for background layer
+ * returns {boolean}
+ */
+function hasBackgroundLayer () {
+  try {
+    //noinspection BadExpressionStatementJS
+    app.activeDocument.backgroundLayer;
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
 function selectLayerByIndex ( index, add ) {
   add = undefined ? add = false : add;
   var ref = new ActionReference();
@@ -28,7 +57,7 @@ function selectLayerByIndex ( index, add ) {
 }
 
 function getSelectedLayerIndexes () {
-  var selectedLayerIndexArray = [];
+  var selectedLayerIndexes = [];
   var ref0 = new ActionReference();
   ref0.putEnumerated( charIDToTypeID( "Dcmn" ), charIDToTypeID( "Ordn" ), charIDToTypeID( "Trgt" ) );
 
@@ -36,12 +65,12 @@ function getSelectedLayerIndexes () {
   if (desc0.hasKey( stringIDToTypeID( 'targetLayers' ) )) {
     desc0 = desc0.getList( stringIDToTypeID( 'targetLayers' ) );
     var count = desc0.count;
-    selectedLayerIndexArray = [];
+    selectedLayerIndexes = [];
     for (var i = 0; i < count; i++) {
       if (hasBackgroundLayer()) {
-        selectedLayerIndexArray.push( desc0.getReference( i ).getIndex() );
+        selectedLayerIndexes.push( desc0.getReference( i ).getIndex() );
       } else {
-        selectedLayerIndexArray.push( desc0.getReference( i ).getIndex() + 1 );
+        selectedLayerIndexes.push( desc0.getReference( i ).getIndex() + 1 );
       }
     }
   } else {
@@ -49,9 +78,9 @@ function getSelectedLayerIndexes () {
     ref1.putProperty( charIDToTypeID( "Prpr" ), charIDToTypeID( "ItmI" ) );
     ref1.putEnumerated( charIDToTypeID( "Lyr " ), charIDToTypeID( "Ordn" ), charIDToTypeID( "Trgt" ) );
     if (hasBackgroundLayer()) {
-      selectedLayerIndexArray.push( executeActionGet( ref1 ).getInteger( charIDToTypeID( "ItmI" ) ) - 1 );
+      selectedLayerIndexes.push( executeActionGet( ref1 ).getInteger( charIDToTypeID( "ItmI" ) ) - 1 );
     } else {
-      selectedLayerIndexArray.push( executeActionGet( ref1 ).getInteger( charIDToTypeID( "ItmI" ) ) );
+      selectedLayerIndexes.push( executeActionGet( ref1 ).getInteger( charIDToTypeID( "ItmI" ) ) );
     }
     var vis = app.activeDocument.activeLayer.visible;
     if (vis == true) {
@@ -65,42 +94,11 @@ function getSelectedLayerIndexes () {
     desc2.putList( charIDToTypeID( 'null' ), list2 );
     executeAction( charIDToTypeID( 'Shw ' ), desc2, DialogModes.NO );
     if (app.activeDocument.activeLayer.visible == false) {
-      selectedLayerIndexArray.shift();
+      selectedLayerIndexes.shift();
     }
     app.activeDocument.activeLayer.visible = vis;
   }
-  return selectedLayerIndexArray;
-}
-
-function getAllLayers () {
-  var res = [];
-  pushLayersRecurred( app.activeDocument, res );
-  return res;
-}
-
-function pushLayersRecurred ( layerSet, array ) {
-  var layersLength = layerSet.layers.length;
-  for (var i = 0; i < layersLength; i++) {
-    var targetLayer = layerSet.layers[i];
-    array.push( targetLayer );
-    if (targetLayer.typename == 'LayerSet') {
-      pushLayersRecurred( targetLayer, array );
-    }
-  }
-}
-
-/**
- * check for background layer
- * returns {boolean}
- */
-function hasBackgroundLayer () {
-  try {
-    //noinspection BadExpressionStatementJS
-    app.activeDocument.backgroundLayer;
-    return true;
-  } catch (e) {
-    return false;
-  }
+  return selectedLayerIndexes;
 }
 
 function deselectAllLayers () {
