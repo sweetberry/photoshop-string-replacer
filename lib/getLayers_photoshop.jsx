@@ -30,35 +30,40 @@ function selectLayerByIndex ( index, add ) {
 
 function getSelectedLayersIdx () {
   var selectedLayerIndexArray = [];
-  var desc = executeActionGet( _getActiveDocumentActionReference() );
-  if (desc.hasKey( stringIDToTypeID( 'targetLayers' ) )) {
-    desc = desc.getList( stringIDToTypeID( 'targetLayers' ) );
-    var count = desc.count;
+  var ref0 = new ActionReference();
+  ref0.putEnumerated( charIDToTypeID( "Dcmn" ), charIDToTypeID( "Ordn" ), charIDToTypeID( "Trgt" ) );
+
+  var desc0 = executeActionGet( ref0 );
+  if (desc0.hasKey( stringIDToTypeID( 'targetLayers' ) )) {
+    desc0 = desc0.getList( stringIDToTypeID( 'targetLayers' ) );
+    var count = desc0.count;
     selectedLayerIndexArray = [];
     for (var i = 0; i < count; i++) {
       if (hasBackgroundLayer()) {
-        selectedLayerIndexArray.push( desc.getReference( i ).getIndex() );
+        selectedLayerIndexArray.push( desc0.getReference( i ).getIndex() );
       } else {
-        selectedLayerIndexArray.push( desc.getReference( i ).getIndex() + 1 );
+        selectedLayerIndexArray.push( desc0.getReference( i ).getIndex() + 1 );
       }
     }
   } else {
-    var ref = new ActionReference();
-    ref.putProperty( charIDToTypeID( "Prpr" ), charIDToTypeID( "ItmI" ) );
-    ref.putEnumerated( charIDToTypeID( "Lyr " ), charIDToTypeID( "Ordn" ), charIDToTypeID( "Trgt" ) );
+    var ref1 = new ActionReference();
+    ref1.putProperty( charIDToTypeID( "Prpr" ), charIDToTypeID( "ItmI" ) );
+    ref1.putEnumerated( charIDToTypeID( "Lyr " ), charIDToTypeID( "Ordn" ), charIDToTypeID( "Trgt" ) );
     if (hasBackgroundLayer()) {
-      selectedLayerIndexArray.push( executeActionGet( ref ).getInteger( charIDToTypeID( "ItmI" ) ) - 1 );
+      selectedLayerIndexArray.push( executeActionGet( ref1 ).getInteger( charIDToTypeID( "ItmI" ) ) - 1 );
     } else {
-      selectedLayerIndexArray.push( executeActionGet( ref ).getInteger( charIDToTypeID( "ItmI" ) ) );
+      selectedLayerIndexArray.push( executeActionGet( ref1 ).getInteger( charIDToTypeID( "ItmI" ) ) );
     }
     var vis = app.activeDocument.activeLayer.visible;
     if (vis == true) {
       app.activeDocument.activeLayer.visible = false;
     }
     var desc2 = new ActionDescriptor();
-    var list = new ActionList();
-    list.putReference( _getAllLayersActionReference() );
-    desc2.putList( charIDToTypeID( 'null' ), list );
+    var list2 = new ActionList();
+    var ref2 = new ActionReference();
+    ref2.putEnumerated( stringIDToTypeID( 'layer' ), stringIDToTypeID( 'ordinal' ), stringIDToTypeID( 'targetEnum' ) );
+    list2.putReference( ref2 );
+    desc2.putList( charIDToTypeID( 'null' ), list2 );
     executeAction( charIDToTypeID( 'Shw ' ), desc2, DialogModes.NO );
     if (app.activeDocument.activeLayer.visible == false) {
       selectedLayerIndexArray.shift();
@@ -74,10 +79,10 @@ function getAllLayers () {
   return res;
 }
 
-function pushLayersRecurred ( layerSet, array ) {
-  var layersLength = layerSet.layers.length;
+function pushLayersRecurred ( laySet, array ) {
+  var layersLength = laySet.layers.length;
   for (var i = 0; i < layersLength; i++) {
-    var targetLayer = layerSet.layers[i];
+    var targetLayer = laySet.layers[i];
     array.push( targetLayer );
     if (targetLayer.typename == 'LayerSet') {
       pushLayersRecurred( targetLayer, array );
@@ -101,18 +106,8 @@ function hasBackgroundLayer () {
 
 function deselectAllLayers () {
   var desc = new ActionDescriptor();
-  desc.putReference( stringIDToTypeID( 'target' ), _getAllLayersActionReference() );
-  executeAction( stringIDToTypeID( 'selectNoLayers' ), desc, DialogModes.NO );
-}
-
-function _getActiveDocumentActionReference () {
-  var ref = new ActionReference();
-  ref.putEnumerated( charIDToTypeID( "Dcmn" ), charIDToTypeID( "Ordn" ), charIDToTypeID( "Trgt" ) );
-  return ref;
-}
-
-function _getAllLayersActionReference () {
   var ref = new ActionReference();
   ref.putEnumerated( stringIDToTypeID( 'layer' ), stringIDToTypeID( 'ordinal' ), stringIDToTypeID( 'targetEnum' ) );
-  return ref;
+  desc.putReference( stringIDToTypeID( 'target' ), ref );
+  executeAction( stringIDToTypeID( 'selectNoLayers' ), desc, DialogModes.NO );
 }
