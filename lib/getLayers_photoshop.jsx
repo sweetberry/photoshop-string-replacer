@@ -1,13 +1,12 @@
+//@include'../lib/underscore.js';
+
 function getSelectedLayers () {
-  var theLayers = getSelectedLayersIdx();
   var res = [];
-  for (var p = 0; p < theLayers.length; p++) {
-    selectLayerByIndex( theLayers[p], false );
+  _.each( getSelectedLayerIndexes(), function ( index ) {
+    selectLayerByIndex( index, false );
     res.push( app.activeDocument.activeLayer );
-  }
-  for (var q = 0; q < theLayers.length; q++) {
-    selectLayerByIndex( theLayers[q], true );
-  }
+    selectLayerByIndex( index, true );
+  } );
   return res;
 }
 
@@ -28,7 +27,7 @@ function selectLayerByIndex ( index, add ) {
   }
 }
 
-function getSelectedLayersIdx () {
+function getSelectedLayerIndexes () {
   var selectedLayerIndexArray = [];
   var ref0 = new ActionReference();
   ref0.putEnumerated( charIDToTypeID( "Dcmn" ), charIDToTypeID( "Ordn" ), charIDToTypeID( "Trgt" ) );
