@@ -1,3 +1,8 @@
+//     util_photoshop.jsx 0.1.0
+//     (c) 2015 sweetberry studio.
+//     Preference_photoshop may be freely distributed under the MIT license.
+
+
 //@include'../lib/underscore.js';
 
 function getSelectedLayers () {
